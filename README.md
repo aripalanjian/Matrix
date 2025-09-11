@@ -1,4 +1,4 @@
-x`# Untitled Linear Algebra Header Only Library
+# Untitled Linear Algebra Header Only Library
 - Description: A header only linear algebra library
 - Contributor(s): Ari Palanjian
 - [GitHub](https://github.com/aripalanjian/PLs-Proj-2.git)
