@@ -13,51 +13,13 @@ class Matrix{
 	size_t rows;
 	size_t cols;
 
-    Matrix subMatrix(const Matrix& A, const int i, const int j)
-    {
-        //Only call if n x n and n >= 3;
-        Matrix sM(A.rows - 1);
-        for(int m = 0; m < A.rows; m++){
-            for(int n = 0; n < A.rows; n++){
-                if (m != i && n != j){
-                    int row = m,col = n;
-                    if (n > j){
-                        col = n - 1;
-                    }
-                    if (m > i){
-                        row = m - 1;
-                    }
-                    sM.matrix[row][col] = A.matrix[m][n];
-                }
-            }
-        }
+    Matrix subMatrix(const Matrix<T>& A, const int i, const int j);
 
-        return sM;
-    };
-
-    void subMatrix(Matrix& cM, const Matrix& A, const int i, const int j)
-    {
-        // Same as above but useful if subMatrix matrix should be usable and not const
-        for(int m = 0; m < A.rows; m++){
-            for(int n = 0; n < A.rows; n++){
-                if (m != i && n != j){
-                    int row = m,col = n;
-                    if (n > j){
-                        col = n - 1;
-                    }
-                    if (m > i){
-                        row = m - 1;
-                    }
-                    cM.matrix[row][col] = A.matrix[m][n];
-                }
-            }
-        }
-    };
+    static void subMatrix(Matrix& cM, const Matrix& A, const int i, const int j);
 
 
 public:
-    // ReSharper disable once CppNonExplicitConvertingConstructor
-    Matrix(const size_t n):rows(n), cols(n) {
+    explicit Matrix(const size_t n):rows(n), cols(n) {
         srand(clock());
         //Construction of a square matrix of size n
         this->matrix = new T*[rows];
@@ -106,7 +68,16 @@ public:
                 this->matrix[i][j] = copy.matrix[i][j];
             }
         }
-    };
+    }
+
+    Matrix & operator=(Matrix &&other) noexcept {
+        if (this == &other)
+            return *this;
+        matrix = other.matrix;
+        rows = other.rows;
+        cols = other.cols;
+        return *this;
+    }
 
     ~Matrix() {
         {
@@ -116,7 +87,7 @@ public:
 
             delete [] matrix;
         }
-    };
+    }
 
     Matrix& operator=(const Matrix& copy) {
         srand(clock());
@@ -161,7 +132,7 @@ public:
             return result;
         }
         return std::nullopt;
-    };
+    }
 
     constexpr std::optional<Matrix> operator-(const Matrix& rhs){
         if(this->rows == rhs.rows && this->cols == rhs.cols){
@@ -174,7 +145,7 @@ public:
             return result;
         }
         return std::nullopt;
-    };
+    }
 
     constexpr std::optional<Matrix> operator*(const Matrix& rhs){
         if (this->cols == rhs.rows) {
@@ -189,7 +160,7 @@ public:
             return result;
         }
         return std::nullopt;
-    };
+    }
 
     constexpr std::optional<Matrix> operator/(const Matrix& divisor) {
         /*
@@ -199,8 +170,10 @@ public:
          *IX = A^-1 * B
          *X = A^-1 * B
          */
-        return inverse(divisor) * this;
-    };
+        Matrix inverseA = inv(divisor);
+        if (inverseA.cols == this->cols) return inverseA * (*this);
+        else return std::nullopt;
+    }
 
     void setDataRand() const{
         for (size_t i = 0; i < rows; i++) {
@@ -208,9 +181,10 @@ public:
                 this->matrix[i][j] = rand()%9 + 1; //Random integer between 1-10
             }
         }
-    };
+    }
 
     void setDataFile(const char* file) const{
+        //Rudimentary file io
         std::ifstream myFile(file);
         while(!myFile.eof()){
             size_t i = 0;
@@ -221,19 +195,21 @@ public:
                 j = 0;
             }
         }
-    };
+    }
 
     constexpr double determinant(const Matrix& A){
+        //Need to develop error handling here
         if (A.rows == 2){
             return (A.matrix[0][0] * A.matrix[1][1]) - (A.matrix[1][0] * A.matrix[0][1]);
         }
         size_t i = 0;
         double det = 0;
+        //Consider refactoring as sufficently large matrices could cause a stack overflow with recursion
         for(size_t j = 0; j < A.cols; j++){
             det += pow(-1, i+j+2) * A.matrix[i][j] * determinant(subMatrix(A,i,j));
         }
         return det;
-    };
+    }
 
     constexpr auto inverse(const Matrix& A){
         Matrix inverse(A);
@@ -251,7 +227,7 @@ public:
             //Do same row operations to identity as A
         }
         return &inverse;
-    };
+    }
 
     constexpr auto cofactor(const Matrix& A){
         Matrix cofactorM(A.rows);
@@ -262,7 +238,7 @@ public:
         }
 
         return &cofactorM;
-    };
+    }
 
     constexpr auto transpose(const Matrix& cofactorM) {
         Matrix transposeM(cofactorM.rows);
@@ -272,18 +248,89 @@ public:
             }
         }
         return &transposeM;
-    };
+    }
 
     constexpr auto adjoint(const Matrix& A) {
         return transpose(cofactor(A));
     }
 
-    void matrixToI(const Matrix& A); //Make private
+    // void matrixToI(const Matrix& A);
 
     constexpr bool isSquare() const {
         return rows == cols;
     }
     void print();
 };
+
+template<std::integral T>
+auto Matrix<T>::subMatrix(const Matrix<T> &A, const int i, const int j)
+{
+    //Only call if n x n and n >= 3;
+    Matrix sM(A.rows - 1);
+    for(int m = 0; m < A.rows; m++){
+        for(int n = 0; n < A.rows; n++){
+            if (m != i && n != j){
+                int row = m,col = n;
+                if (n > j){
+                    col = n - 1;
+                }
+                if (m > i){
+                    row = m - 1;
+                }
+                sM.matrix[row][col] = A.matrix[m][n];
+            }
+        }
+    }
+    return sM;
+}
+
+template<std::integral T>
+void Matrix<T>::subMatrix(Matrix &cM, const Matrix &A, const int i, const int j)
+{
+    // Same as above but useful if subMatrix matrix should be usable and not const
+    for(int m = 0; m < A.rows; m++){
+        for(int n = 0; n < A.rows; n++){
+            if (m != i && n != j){
+                int row = m,col = n;
+                if (n > j){
+                    col = n - 1;
+                }
+                if (m > i){
+                    row = m - 1;
+                }
+                cM.matrix[row][col] = A.matrix[m][n];
+            }
+        }
+    }
+}
+/*
+template<std::integral T>
+void Matrix<T>::matrixToI(const Matrix &A)
+{
+    //Incomplete
+    Matrix tmp(A.rows);
+    Matrix identity('I',A.rows);
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < rows; j++){
+            tmp.matrix[i][j] = identity.matrix[i][j] - A.matrix[i][j];
+        }
+    }
+    tmp.print();
+}
+*/
+template<std::integral T>
+void Matrix<T>::print()
+{
+    std::puts("[\n");
+    for (int i = 0; i < rows; i++) {
+        std::puts("\t");
+        for (int j = 0; j < cols; j++) {
+            std::puts(matrix[i][j] << " ");
+        }
+        std::puts("\n");
+    }
+    std::puts("]\n");
+}
+
 
 #endif
