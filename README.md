@@ -14,7 +14,6 @@ is not guaranteed to work. As I am able, I will update this library to more mode
  - Matrix(const size_t m, const size_t n): Construction of a matrix of size m(rows) x n(columns)
  - Matrix(const char I, const size_t n):   Creates Identity matrix of size n
  - Matrix(const Matrix& copy):             Copies a given matrix into a new object
- - 
 
 ### Overloaded Operators
 - operator= : Working on implementation 
