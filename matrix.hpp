@@ -13,8 +13,46 @@ class Matrix{
 	size_t rows;
 	size_t cols;
 
-    const Matrix subMatrix(const Matrix& A, int i, int j);
-    void subMatrix(Matrix& cM, const Matrix& A, int i, int j);
+    Matrix subMatrix(const Matrix& A, const int i, const int j)
+    {
+        //Only call if n x n and n >= 3;
+        Matrix sM(A.rows - 1);
+        for(int m = 0; m < A.rows; m++){
+            for(int n = 0; n < A.rows; n++){
+                if (m != i && n != j){
+                    int row = m,col = n;
+                    if (n > j){
+                        col = n - 1;
+                    }
+                    if (m > i){
+                        row = m - 1;
+                    }
+                    sM.matrix[row][col] = A.matrix[m][n];
+                }
+            }
+        }
+
+        return sM;
+    };
+
+    void subMatrix(Matrix& cM, const Matrix& A, const int i, const int j)
+    {
+        // Same as above but useful if subMatrix matrix should be usable and not const
+        for(int m = 0; m < A.rows; m++){
+            for(int n = 0; n < A.rows; n++){
+                if (m != i && n != j){
+                    int row = m,col = n;
+                    if (n > j){
+                        col = n - 1;
+                    }
+                    if (m > i){
+                        row = m - 1;
+                    }
+                    cM.matrix[row][col] = A.matrix[m][n];
+                }
+            }
+        }
+    };
 
 
 public:
@@ -185,7 +223,7 @@ public:
         }
     };
 
-    double determinant(const Matrix& A){
+    constexpr double determinant(const Matrix& A){
         if (A.rows == 2){
             return (A.matrix[0][0] * A.matrix[1][1]) - (A.matrix[1][0] * A.matrix[0][1]);
         }
@@ -197,7 +235,7 @@ public:
         return det;
     };
 
-    Matrix inverse(const Matrix& A){
+    constexpr auto inverse(const Matrix& A){
         Matrix inverse(A);
         Matrix identity('I',A.rows);
         if (determinant(A) != 0) {
@@ -212,10 +250,10 @@ public:
             //A -> identity using Gauss-Jordan Elimination
             //Do same row operations to identity as A
         }
-        return inverse;
+        return &inverse;
     };
 
-    Matrix cofactor(const Matrix& A){
+    constexpr auto cofactor(const Matrix& A){
         Matrix cofactorM(A.rows);
         for(size_t i = 0; i < A.rows; i++){
             for(int j = 0; j < A.rows; j++){
@@ -223,24 +261,28 @@ public:
             }
         }
 
-        return cofactorM;
+        return &cofactorM;
     };
 
-    Matrix transpose(const Matrix& cofactorM){
+    constexpr auto transpose(const Matrix& cofactorM) {
         Matrix transposeM(cofactorM.rows);
         for(int i = 0; i < cofactorM.rows; i++){
             for(int j = 0; j < cofactorM.rows; j++){
                 transposeM.matrix[i][j] = cofactorM.matrix[j][i];
             }
         }
-        return transposeM;
+        return &transposeM;
     };
 
-    Matrix adjoint(const Matrix& A){return transpose(cofactor(A));}
+    constexpr auto adjoint(const Matrix& A) {
+        return transpose(cofactor(A));
+    }
 
     void matrixToI(const Matrix& A); //Make private
 
-    bool isSquare() const {return rows == cols;}
+    constexpr bool isSquare() const {
+        return rows == cols;
+    }
     void print();
 };
 

@@ -1,5 +1,7 @@
 future-imple.txt
+CMakeLists.txt
 cmake-build-debug
-notes.txt
 .DS_Store
 .idea
+library.cpp
+library.h
