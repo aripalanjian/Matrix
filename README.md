@@ -5,7 +5,7 @@
 ## About
 Began as an exercise to develop mathematical equations while studying linear algebra at university to reinforce
 the covered material. This project is in transition from a compiled version to a header only library and thus at this time 
-is not guaranteed to work. As I am able, I will update this library to more modern c++20 standards and to add multi-threading.
+is not guaranteed to work. As I am able, I will update this library to more modern c++20 standards and to add multithreading.
 ## Getting Started
 - Download matrix.hpp
 ## Interface
