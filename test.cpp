@@ -44,55 +44,36 @@ void multiplicationTest(){
 
 }
 
-void parallelMultiplicationTest(){
-    Matrix m1(3);
-    Matrix m2(3);
-    m1.setDataRand();
-    m2.setDataRand();
-
-}
-
-void inverseTest(){
-    std::cout << "Inverse Test:\n";
-    Matrix m1(3);
-    m1.setDataRand();
-    m1.print();
-
-    m1.matrixToI(m1);//required to be a square matrix
-}
-
-void additionOptTest(){
-    std::cout << "Addition(Optional) Test:\n";
+void additionTest(){
+    std::cout << "Addition Test:\n";
     Matrix m1(3);
     m1.setDataRand();
     m1.print();
     if(auto result = m1 + m1){
         result.value().print();
     }
-    
+}
+
+void runTests(){
+    additionTest();
+    subtractionTest();
+    multiplicationTest();
+    divisionTest();
+    determinantTest();
+    transposeTest();
+
 }
 
 int main(){
     struct timespec start;
     struct timespec finish;
-
-    multiplicationTest();
-
-    inverseTest();
-
-    additionOptTest();    
-
-    // clock_gettime(CLOCK_REALTIME, &start);
-    // std::cout << "det(A) = " << m1.determinant(m1) << "\n";
-    // clock_gettime(CLOCK_REALTIME, &finish);
-
-    // printDuration(start,finish);
-
     
+    clock_gettime(CLOCK_REALTIME, &start);
+    multiplicationTest();
+    additionTest();
+    clock_gettime(CLOCK_REALTIME, &finish);
 
-    // res = m1.multiply_parallel(m1, 4);
-    // res->print();
-    // delete res;
+    printDuration(start,finish);
 
     return 0;
 }
