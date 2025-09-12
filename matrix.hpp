@@ -170,7 +170,7 @@ public:
          *IX = A^-1 * B
          *X = A^-1 * B
          */
-        Matrix inverseA = inv(divisor);
+        Matrix inverseA = inverse(divisor);
         if (inverseA.cols == this->cols) return inverseA * (*this);
         else return std::nullopt;
     }
