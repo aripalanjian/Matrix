@@ -1,4 +1,4 @@
-# Untitled Linear Algebra Header Only Library
+# Neo - Header Only Linear Algebra Library
 - Description: A header only linear algebra library
 - Contributor(s): Ari Palanjian
 - [GitHub](https://github.com/aripalanjian/PLs-Proj-2.git)
@@ -7,7 +7,12 @@ Began as an exercise to develop mathematical equations while studying linear alg
 the covered material. This project is in transition from a compiled version to a header only library and thus at this time 
 is not guaranteed to work. As I am able, I will update this library to more modern c++20 standards and to add multithreading.
 ## Getting Started
-- Download matrix.hpp
+- Build from source
+  - Download repository
+  - In your CMake project structure in the directory where the library is stored add 
+  ```add_subdirectory(Neo)``` to your CMakeLists.txt file.
+  - Reload or Sync your integrated development environment.
+  - 
 ## Interface
 ### Constructors
  - Matrix(const size_t n):                 Construction of a square matrix of size n

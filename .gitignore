@@ -1,8 +1,13 @@
-future-imple.txt
-CMakeLists.txt
+#Builds
 cmake-build-debug
+build
+
+#Generated Local Files
 .DS_Store
 .idea
-library.cpp
-library.h
-matrix.cpp
+main.cpp
+
+#Notes
+future-imple.txt
+.notes/
+.oldcode/
