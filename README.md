@@ -12,7 +12,6 @@ is not guaranteed to work. As I am able, I will update this library to more mode
   - In your CMake project structure in the directory where the library is stored add 
   ```add_subdirectory(Neo)``` to your CMakeLists.txt file.
   - Reload or Sync your integrated development environment.
-  - 
 ## Interface
 ### Constructors
  - Matrix(const size_t n):                 Construction of a square matrix of size n
