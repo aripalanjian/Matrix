@@ -1,0 +1,12 @@
+name: Linear Algebra Library Tests
+run-name: ${{ github.actor }} running tests
+on: [push]
+jobs: 
+  Run-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building Tests..."
+      - run: cmake -B tests
+      - run: cmake --build tests
+      - run: ./${{ github.workspace }}/tests/tests/GoogleTest/run_gtests
+      - run: cmake --build tests --target clean
