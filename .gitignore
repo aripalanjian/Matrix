@@ -1,0 +1,13 @@
+#Builds
+cmake-build-debug
+build
+
+#Generated Local Files
+.DS_Store
+.idea
+main.cpp
+
+#Notes
+future-imple.txt
+.notes/
+.oldcode/
