@@ -8,7 +8,7 @@
 TEST(Fundamental, IdentityMultiplication) {
     constexpr size_t m = 4;
     constexpr size_t n = 4;
-    const int data[4][4] = {{1, 2, 3, 4}, {4, 3, 2, 1}, {2, 2, 2, 2}, {3, 3, 2, 1}};
+    constexpr int data[4][4] = {{1, 2, 3, 4}, {4, 3, 2, 1}, {2, 2, 2, 2}, {3, 3, 2, 1}};
 
     const auto data2 = new int *[m];
 
@@ -37,7 +37,7 @@ TEST(Fundamental, IdentityMultiplication) {
 TEST(Fundamental, UnequalDims) {
     constexpr size_t m = 4;
     constexpr size_t n = 4;
-    const int data[4][4] = {{1, 2, 3, 4}, {4, 3, 2, 1}, {2, 2, 2, 2}, {3, 3, 2, 1}};
+    constexpr int data[4][4] = {{1, 2, 3, 4}, {4, 3, 2, 1}, {2, 2, 2, 2}, {3, 3, 2, 1}};
 
     const auto data2 = new int *[m];
 
@@ -49,7 +49,7 @@ TEST(Fundamental, UnequalDims) {
     }
     //Do Stuff
     Neo::Matrix<int> testMatrix{data2, m, n};
-    Neo::Matrix<int> UnequalMatrix{3,n};
+    const Neo::Matrix<int> UnequalMatrix{3,n};
     EXPECT_FALSE(testMatrix.getDims() == UnequalMatrix.getDims());
     EXPECT_FALSE(testMatrix == UnequalMatrix);
     //Cleanup
