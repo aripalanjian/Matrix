@@ -1,7 +1,7 @@
 # Neo - Header Only Linear Algebra Library
 - Description: A header only linear algebra library
 - Contributor(s): Ari Palanjian
-- [GitHub](https://github.com/aripalanjian/PLs-Proj-2.git)
+- [GitHub](https://github.com/aripalanjian/Matrix.git)
 ## About
 Began as an exercise to develop mathematical equations while studying linear algebra at university to reinforce
 the covered material. This project is in transition from a compiled version to a header only library and thus at this time 
