@@ -13,6 +13,7 @@ namespace Neo {
         bool operator==(const Dims& other) const {if (rows == other.rows && cols == other.cols) return true; return false;}
         [[nodiscard]] bool canMultiply(const Dims& other) const {if (cols == other.rows) return true;  return false;}
     };
+
     template <std::integral T>
     class Matrix{
         T** matrix;
@@ -21,87 +22,18 @@ namespace Neo {
         Dims dims{};
 
         Matrix subMatrix(const Matrix &A, size_t i, size_t j);
-
         static void subMatrix(Matrix& cM, const Matrix& A, size_t i, size_t j);
 
 
     public:
-        explicit Matrix(const size_t n):rows(n), cols(n), dims(n, n) {
-            srand(clock());
-            //Construction of a square matrix of size n
-            this->matrix = new T*[rows];
-            for (size_t i = 0; i < rows; i++){
-                this->matrix[i] = new T[cols];
-            }
-        };
+        explicit Matrix(size_t n);
+        Matrix(size_t m, size_t n);
+        Matrix(T** data, size_t m, size_t n);
+        Matrix(const std::string& I, size_t n);
+        Matrix(const Matrix& copy);
+        ~Matrix();
 
-        Matrix(const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
-            //Construction of a matrix of size m(rows) x n(columns)
-            srand(clock());
-            this->matrix = new T *[rows];
-            for (size_t i = 0; i < rows; i++) {
-                this->matrix[i] = new T[cols];
-            }
-        };
-
-        Matrix(T** data, const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
-            srand(clock());
-            this->matrix = new T*[rows];
-            for(size_t i = 0; i < rows; i++) {
-                this->matrix[i] = new T[cols];
-                for(size_t j = 0; j < cols; j++) {
-                    this->matrix[i][j] = data[i][j];
-                }
-            }
-        }
-
-        Matrix(const std::string& I, const size_t n): rows(n), cols(n), dims(n,n){
-            //Creates nxn Identity matrix
-            if (I == "I"){
-                srand(clock());
-                //Construction of a square matrix of size n
-                this->matrix = new T*[rows];
-                for (size_t i = 0; i < rows; i++){
-                    this->matrix[i] = new T[cols];
-                }
-
-                for(size_t i = 0; i < n; i++) {
-                    for(size_t j = 0; j < n; j++) {
-                        if (i == j){
-                            matrix[i][j] = 1;
-                        } else {
-                            matrix[i][j] = 0;
-                        }
-                    }
-                }
-            }
-        };
-
-        Matrix(const Matrix& copy): rows(copy.rows), cols(copy.cols), dims(copy.dims) {
-            srand(clock());
-            this->matrix = new T*[this->rows];
-            for(size_t i = 0; i < this->rows; i++) {
-                this->matrix[i] = new T[this->cols];
-                for(size_t j = 0; j < this->cols; j++){
-                    this->matrix[i][j] = copy.matrix[i][j];
-                }
-            }
-        }
-
-        ~Matrix() {
-            {
-                for (int i = 0; i < rows; i++){
-                    delete [] matrix[i];
-                }
-
-                delete [] matrix;
-            }
-        }
-
-        [[nodiscard]] const Dims& getDims() const {
-            return dims;
-        }
-
+        [[nodiscard]] const Dims& getDims() const {return dims;}
         Matrix& operator=(Matrix &&other) noexcept {
             //If other is destroyed this object well lose its values?
             if (this == &other)
@@ -298,9 +230,84 @@ namespace Neo {
             return rows == cols;
         }
         void print();
-
-
     };
+
+    //Big Five
+    template<std::integral T>
+    Matrix<T>::Matrix(const size_t n):rows(n), cols(n), dims(n, n) {
+        srand(clock());
+        //Construction of a square matrix of size n
+        this->matrix = new T*[rows];
+        for (size_t i = 0; i < rows; i++){
+            this->matrix[i] = new T[cols];
+        }
+    };
+
+    template<std::integral T>
+    Matrix<T>::Matrix(const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
+        //Construction of a matrix of size m(rows) x n(columns)
+        srand(clock());
+        this->matrix = new T *[rows];
+        for (size_t i = 0; i < rows; i++) {
+            this->matrix[i] = new T[cols];
+        }
+    };
+
+    template<std::integral T>
+    Matrix<T>::Matrix(T** data, const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
+        srand(clock());
+        this->matrix = new T*[rows];
+        for(size_t i = 0; i < rows; i++) {
+            this->matrix[i] = new T[cols];
+            for(size_t j = 0; j < cols; j++) {
+                this->matrix[i][j] = data[i][j];
+            }
+        }
+    }
+
+    template<std::integral T>
+    Matrix<T>::Matrix(const std::string& I, const size_t n): rows(n), cols(n), dims(n,n){
+        //Creates nxn Identity matrix
+        if (I == "I"){
+            srand(clock());
+            //Construction of a square matrix of size n
+            this->matrix = new T*[rows];
+            for (size_t i = 0; i < rows; i++){
+                this->matrix[i] = new T[cols];
+            }
+
+            for(size_t i = 0; i < n; i++) {
+                for(size_t j = 0; j < n; j++) {
+                    if (i == j){
+                        matrix[i][j] = 1;
+                    } else {
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    template<std::integral T>
+    Matrix<T>::Matrix(const Matrix& copy): rows(copy.rows), cols(copy.cols), dims(copy.dims) {
+        srand(clock());
+        this->matrix = new T*[this->rows];
+        for(size_t i = 0; i < this->rows; i++) {
+            this->matrix[i] = new T[this->cols];
+            for(size_t j = 0; j < this->cols; j++){
+                this->matrix[i][j] = copy.matrix[i][j];
+            }
+        }
+    }
+    template<std::integral T>
+    Matrix<T>::~Matrix()
+    {
+        for (int i = 0; i < rows; i++){
+            delete [] matrix[i];
+        }
+
+        delete [] matrix;
+    }
 
     template<std::integral T>
     Matrix<T> Matrix<T>::subMatrix(const Matrix &A, const size_t i, const size_t j)
