@@ -104,7 +104,7 @@ namespace Neo {
             }
             return std::nullopt;
         }
-        #include <iostream>
+
         constexpr std::optional<Matrix> operator*(const Matrix& rhs){
             if (dims.canMultiply(rhs.getDims())) {
                 Matrix result{this->dims.rows, rhs.dims.cols};
@@ -113,9 +113,10 @@ namespace Neo {
                         for(size_t j = 0; j < rhs.dims.rows; j++) {
                             result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
                         }
-                        std::cout << result.matrix[i][k] << " ";
+                        std::fputs(std::to_string(matrix[i][k]).data(), stdout);
+                        std::fputs(" ",stdout);
                     }
-                    std::cout << std::endl;
+                    std::puts("");
                 }
                 return result;
             }
