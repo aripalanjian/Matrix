@@ -104,7 +104,7 @@ namespace Neo {
             }
             return std::nullopt;
         }
-
+        #include <iostream>
         constexpr std::optional<Matrix> operator*(const Matrix& rhs){
             if (dims.canMultiply(rhs.getDims())) {
                 Matrix result{this->dims.rows, rhs.dims.cols};
