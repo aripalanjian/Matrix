@@ -17,7 +17,7 @@ namespace Neo {
     template <std::integral T>
     class Matrix{
         T** matrix;
-        Dims dims;
+        Dims dims{};
 
         Matrix subMatrix(const Matrix &A, size_t i, size_t j);
         static void subMatrix(Matrix& cM, const Matrix& A, size_t i, size_t j);
@@ -112,10 +112,9 @@ namespace Neo {
                     for (size_t k = 0; k < rhs.dims.cols; k++) {
                         for(size_t j = 0; j < rhs.dims.rows; j++) {
                             result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
-                            std::fputs(std::to_string(this->matrix[i][j] * rhs.matrix[j][k]).data(), stdout);
+                            std::fputs((std::to_string(this->matrix[i][j] * rhs.matrix[j][k]) + "+").data(), stdout);
                         }
-                        std::fputs(std::to_string(result.matrix[i][k]).data(), stdout);
-                        std::fputs(" ",stdout);
+                        std::fputs(("=" + std::to_string(result.matrix[i][k]) + " ").data(), stdout);
                     }
                     std::puts("");
                 }
