@@ -113,7 +113,9 @@ namespace Neo {
                         for(size_t j = 0; j < rhs.dims.rows; j++) {
                             result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
                         }
+                        std::cout << result.matrix[i][k] << " ";
                     }
+                    std::cout << std::endl;
                 }
                 return result;
             }
