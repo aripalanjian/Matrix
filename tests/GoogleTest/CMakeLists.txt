@@ -10,7 +10,9 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 # 'run_gtests' is the target name
 # 'operator_test.cpp' are source files with tests
-add_executable(run_gtests operator_test.cpp)
+add_executable(run_gtests
+        operator_test.cpp
+        MatrixOperatorTest.cpp)
 target_link_libraries(run_gtests gtest gtest_main)
 
 

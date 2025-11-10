@@ -17,9 +17,7 @@ namespace Neo {
     template <std::integral T>
     class Matrix{
         T** matrix;
-        size_t rows;
-        size_t cols;
-        Dims dims{};
+        Dims dims;
 
         Matrix subMatrix(const Matrix &A, size_t i, size_t j);
         static void subMatrix(Matrix& cM, const Matrix& A, size_t i, size_t j);
@@ -29,6 +27,8 @@ namespace Neo {
         explicit Matrix(size_t n);
         Matrix(size_t m, size_t n);
         Matrix(T** data, size_t m, size_t n);
+        Matrix(std::initializer_list<std::initializer_list<T>> data, size_t m, size_t n);
+        explicit Matrix(const std::string& fileName = "matrix.csv"); // First line contains dimensions, remaining file contents are data points //
         Matrix(const std::string& I, size_t n);
         Matrix(const Matrix& copy);
         ~Matrix();
@@ -39,11 +39,9 @@ namespace Neo {
             if (this == &other)
                 return *this;
             matrix = other.matrix;
-            rows = other.rows;
-            cols = other.cols;
             dims = other.dims;
-            for (size_t i = 0; i < rows; i++) {
-                for (size_t j = 0; j < cols; j++) {
+            for (size_t i = 0; i < dims.rows; i++) {
+                for (size_t j = 0; j < dims.cols; j++) {
                     this->matrix[i][j] = std::move(other.matrix[i][j]);
                 }
             }
@@ -53,12 +51,11 @@ namespace Neo {
         Matrix& operator=(const Matrix& copy) {
             srand(clock());
             if(this != &copy){
-                this->rows = copy.rows;
-                this->cols = copy.cols;
-                this->matrix = new T*[this->rows];
-                for(size_t i = 0; i < this->rows; i++) {
-                    this->matrix[i] = new T[this->cols];
-                    for(size_t j = 0; j < this->cols; j++){
+                this->dims = copy.dims;
+                this->matrix = new T*[this->dims.rows];
+                for(size_t i = 0; i < this->dims.rows; i++) {
+                    this->matrix[i] = new T[this->dims.cols];
+                    for(size_t j = 0; j < this->dims.cols; j++){
                         this->matrix[i][j] = copy.matrix[i][j];
                     }
                 }
@@ -68,8 +65,8 @@ namespace Neo {
 
         constexpr bool operator==(const Matrix<T>& rhs) {
             if(dims == rhs.dims) {
-                for(size_t i = 0; i < this->rows; i++) {
-                    for(size_t j = 0; j < this->cols; j++) {
+                for(size_t i = 0; i < this->dims.rows; i++) {
+                    for(size_t j = 0; j < this->dims.cols; j++) {
                         if(this->matrix[i][j] != rhs.matrix[i][j]) return false;
                     }
                 }
@@ -84,9 +81,9 @@ namespace Neo {
 
         constexpr std::optional<Matrix> operator+(const Matrix& rhs){
             if(dims == rhs.dims) {
-                Matrix result(rows, cols);
-                for(int i = 0; i < this->rows; i++) {
-                    for (int k = 0; k < this->cols; k++) {
+                Matrix result(dims.rows, dims.cols);
+                for(int i = 0; i < this->dims.rows; i++) {
+                    for (int k = 0; k < this->dims.cols; k++) {
                         result.matrix[i][k] = this->matrix[i][k] + rhs.matrix[i][k];
                     }
                 }
@@ -97,9 +94,9 @@ namespace Neo {
 
         constexpr std::optional<Matrix> operator-(const Matrix& rhs){
             if(dims == rhs.dims) {
-                Matrix result(rows, cols);
-                for(int i = 0; i < this->rows; i++) {
-                    for (int k = 0; k < this->cols; k++) {
+                Matrix result(dims.rows, dims.cols);
+                for(int i = 0; i < this->dims.rows; i++) {
+                    for (int k = 0; k < this->dims.cols; k++) {
                         result.matrix[i][k] = this->matrix[i][k] - rhs.matrix[i][k];
                     }
                 }
@@ -110,10 +107,10 @@ namespace Neo {
 
         constexpr std::optional<Matrix> operator*(const Matrix& rhs){
             if (dims.canMultiply(rhs.dims)) {
-                Matrix result{this->rows, rhs.cols};
-                for(size_t i = 0; i < this->rows; i++) {
-                    for (size_t k = 0; k < rhs.cols; k++) {
-                        for(size_t j = 0; j < rhs.rows; j++) {
+                Matrix result{this->dims.rows, rhs.dims.cols};
+                for(size_t i = 0; i < this->dims.rows; i++) {
+                    for (size_t k = 0; k < rhs.dims.cols; k++) {
+                        for(size_t j = 0; j < rhs.dims.rows; j++) {
                             result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
                         }
                     }
@@ -131,8 +128,8 @@ namespace Neo {
              *IX = A^-1 * B
              *X = A^-1 * B
              */
-            Matrix inverseA = inverse(divisor);
-            if (inverseA.cols == this->cols) return inverseA * (*this);
+            Matrix inverseA = *inverse(divisor);
+            if (inverseA.dims.cols == this->dims.cols) return inverseA * (*this);
             return std::nullopt;
         }
 
@@ -145,8 +142,8 @@ namespace Neo {
         // }
 
         void setDataRand() const{
-            for (size_t i = 0; i < rows; i++) {
-                for (size_t j = 0; j < cols; j++) {
+            for (size_t i = 0; i < dims.rows; i++) {
+                for (size_t j = 0; j < dims.cols; j++) {
                     this->matrix[i][j] = rand()%9 + 1; //Random integer between 1-10
                 }
             }
@@ -168,13 +165,13 @@ namespace Neo {
 
         constexpr double determinant(const Matrix& A){
             //Need to develop error handling here
-            if (A.rows == 2){
+            if (A.dims.rows == 2){
                 return (A.matrix[0][0] * A.matrix[1][1]) - (A.matrix[1][0] * A.matrix[0][1]);
             }
             size_t i = 0;
             double det = 0;
             //Consider refactoring as sufficiently large matrices could cause a stack overflow with recursion
-            for(size_t j = 0; j < A.cols; j++){
+            for(size_t j = 0; j < A.dims.cols; j++){
                 //parallize by splitting matrix into 4 submatrices and solve determinant for each quadrant in sep thread
                 det += pow(-1, i+j+2) * A.matrix[i][j] * determinant(subMatrix({},A,i, j));
             }
@@ -182,11 +179,12 @@ namespace Neo {
         }
 
         constexpr auto inverse(const Matrix& A){
+            //Not currently Functional
             Matrix inverse(A);
-            Matrix identity('I',A.rows);
+            Matrix identity('I',A.dims.rows);
             if (determinant(A) != 0) {
-                for (size_t i = 0; i < A.rows; i++){
-                    for(size_t j = 0; j < A.rows; j++){
+                for (size_t i = 0; i < A.dims.rows; i++){
+                    for(size_t j = 0; j < A.dims.rows; j++){
                         if(inverse.matrix[i][0] != 0){
                             inverse.matrix[i][j] = inverse.matrix[i][j]/inverse.matrix[i][0]; //only works for floats
                         }
@@ -200,9 +198,9 @@ namespace Neo {
         }
 
         constexpr auto cofactor(const Matrix& A){
-            Matrix cofactorM(A.rows);
-            for(size_t i = 0; i < A.rows; i++){
-                for(int j = 0; j < A.rows; j++){
+            Matrix cofactorM(A.dims.rows);
+            for(size_t i = 0; i < A.dims.rows; i++){
+                for(int j = 0; j < A.dims.rows; j++){
                     cofactorM.matrix[i][j] = pow(-1,i+j) * determinant(subMatrix({},A,i, j));
                 }
             }
@@ -211,9 +209,9 @@ namespace Neo {
         }
 
         constexpr auto transpose(const Matrix& cofactorM) {
-            Matrix transposeM(cofactorM.rows);
-            for(int i = 0; i < cofactorM.rows; i++){
-                for(int j = 0; j < cofactorM.rows; j++){
+            Matrix transposeM(cofactorM.dims.rows);
+            for(int i = 0; i < cofactorM.dims.rows; i++){
+                for(int j = 0; j < cofactorM.dims.rows; j++){
                     transposeM.matrix[i][j] = cofactorM.matrix[j][i];
                 }
             }
@@ -227,56 +225,84 @@ namespace Neo {
         // void matrixToI(const Matrix& A);
 
         [[nodiscard]] constexpr bool isSquare() const {
-            return rows == cols;
+            return dims.rows == dims.cols;
         }
         void print();
+        void serialize(const std::string& fileName = "matrix.csv") {
+            std::fstream newFile;
+            newFile.open(fileName, std::ios::out | std::ios::app);
+
+            if (!newFile.is_open()) {
+                std::puts(std::string_view("Error opening file " + fileName).data());
+            } else {
+                newFile << dims.rows << ',' << dims.cols << std::endl;
+                for(size_t i = 0; i < dims.rows; i++) {
+                    for(size_t j = 0; j < dims.cols; j++) {
+                        newFile << this->matrix[i][j];
+                        if(j != dims.cols-1) newFile << ',';
+                    }
+                    if (i != dims.rows-1) newFile << std::endl;
+                }
+                newFile.close();
+            }
+        }
     };
 
     //Big Five
     template<std::integral T>
-    Matrix<T>::Matrix(const size_t n):rows(n), cols(n), dims(n, n) {
+    Matrix<T>::Matrix(const size_t n):dims(n, n) {
         srand(clock());
         //Construction of a square matrix of size n
-        this->matrix = new T*[rows];
-        for (size_t i = 0; i < rows; i++){
-            this->matrix[i] = new T[cols];
+        this->matrix = new T*[n];
+        for (size_t i = 0; i < n; i++){
+            this->matrix[i] = new T[n];
         }
     };
 
     template<std::integral T>
-    Matrix<T>::Matrix(const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
+    Matrix<T>::Matrix(const size_t m, const size_t n): dims(m,n) {
         //Construction of a matrix of size m(rows) x n(columns)
         srand(clock());
-        this->matrix = new T *[rows];
-        for (size_t i = 0; i < rows; i++) {
-            this->matrix[i] = new T[cols];
+        this->matrix = new T *[m];
+        for (size_t i = 0; i < m; i++) {
+            this->matrix[i] = new T[n];
         }
     };
 
     template<std::integral T>
-    Matrix<T>::Matrix(T** data, const size_t m, const size_t n): rows(m), cols(n), dims(m,n) {
+    Matrix<T>::Matrix(T** data, const size_t m, const size_t n): dims(m,n) {
         srand(clock());
-        this->matrix = new T*[rows];
-        for(size_t i = 0; i < rows; i++) {
-            this->matrix[i] = new T[cols];
-            for(size_t j = 0; j < cols; j++) {
+        this->matrix = new T*[m];
+        for(size_t i = 0; i < m; i++) {
+            this->matrix[i] = new T[n];
+            for(size_t j = 0; j < n; j++) {
                 this->matrix[i][j] = data[i][j];
             }
         }
     }
 
     template<std::integral T>
-    Matrix<T>::Matrix(const std::string& I, const size_t n): rows(n), cols(n), dims(n,n){
+    Matrix<T>::Matrix(std::initializer_list<std::initializer_list<T>> data,const size_t m, const size_t n): dims(m,n) {
+        srand(clock());
+        this->matrix = new T*[m];
+        auto it = data.begin();
+        for(size_t i = 0; i < m; i++) {
+            this->matrix[i] = new T[n];
+            for(size_t j = 0; j < n; j++) {
+                this->matrix[i][j] = it->begin()[j];
+            }
+            ++it;
+        }
+    }
+
+    template<std::integral T>
+    Matrix<T>::Matrix(const std::string& I, const size_t n): dims(n,n){
         //Creates nxn Identity matrix
         if (I == "I"){
             srand(clock());
-            //Construction of a square matrix of size n
-            this->matrix = new T*[rows];
-            for (size_t i = 0; i < rows; i++){
-                this->matrix[i] = new T[cols];
-            }
-
+            this->matrix = new T*[n];
             for(size_t i = 0; i < n; i++) {
+                this->matrix[i] = new T[n];
                 for(size_t j = 0; j < n; j++) {
                     if (i == j){
                         matrix[i][j] = 1;
@@ -289,20 +315,21 @@ namespace Neo {
     }
 
     template<std::integral T>
-    Matrix<T>::Matrix(const Matrix& copy): rows(copy.rows), cols(copy.cols), dims(copy.dims) {
+    Matrix<T>::Matrix(const Matrix& copy): dims(copy.dims) {
         srand(clock());
-        this->matrix = new T*[this->rows];
-        for(size_t i = 0; i < this->rows; i++) {
-            this->matrix[i] = new T[this->cols];
-            for(size_t j = 0; j < this->cols; j++){
+        this->matrix = new T*[this->dims.rows];
+        for(size_t i = 0; i < this->dims.rows; i++) {
+            this->matrix[i] = new T[this->dims.cols];
+            for(size_t j = 0; j < this->dims.cols; j++){
                 this->matrix[i][j] = copy.matrix[i][j];
             }
         }
     }
+
     template<std::integral T>
     Matrix<T>::~Matrix()
     {
-        for (int i = 0; i < rows; i++){
+        for (int i = 0; i < dims.rows; i++){
             delete [] matrix[i];
         }
 
@@ -310,12 +337,32 @@ namespace Neo {
     }
 
     template<std::integral T>
+    Matrix<T>::Matrix(const std::string& fileName ): dims(0,0)
+    {
+        std::fstream newFile;
+        newFile.open(fileName, std::ios::in);
+        if (!newFile.is_open()) {
+            std::puts(std::string_view("Error opening file " + fileName).data());
+        } else {
+            newFile >> dims.rows >> dims.cols;
+            matrix = new T*[dims.rows];
+            for(size_t i = 0; i < dims.rows; i++) {
+                matrix[i] = new T[dims.cols];
+                for(size_t j = 0; j < dims.cols; j++) {
+                    newFile >> this->matrix[i][j];
+                }
+            }
+            newFile.close();
+        }
+    }
+
+    template<std::integral T>
     Matrix<T> Matrix<T>::subMatrix(const Matrix &A, const size_t i, const size_t j)
     {
         //Only call if n x n and n >= 3;
-        Matrix sM(A.rows - 1);
-        for(int m = 0; m < A.rows; m++){
-            for(int n = 0; n < A.rows; n++){
+        Matrix sM(A.dims.rows - 1);
+        for(int m = 0; m < A.dims.rows; m++){
+            for(int n = 0; n < A.dims.rows; n++){
                 if (m != i && n != j){
                     int row = m,col = n;
                     if (n > j){
@@ -331,12 +378,13 @@ namespace Neo {
         return sM;
     }
 
+
     template<std::integral T>
     void Matrix<T>::subMatrix(Matrix &cM, const Matrix &A, const size_t i, const size_t j)
     {
         // Same as above but useful if subMatrix matrix should be usable and not const
-        for(int m = 0; m < A.rows; m++){
-            for(int n = 0; n < A.rows; n++){
+        for(int m = 0; m < A.dims.rows; m++){
+            for(int n = 0; n < A.dims.rows; n++){
                 if (m != i && n != j){
                     int row = m,col = n;
                     if (n > j){
@@ -369,9 +417,9 @@ namespace Neo {
     void Matrix<T>::print()
     {
         std::puts("[");
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < dims.rows; i++) {
             std::fputs("\t", stdout);
-            for (int j = 0; j < cols; j++) {
+            for (int j = 0; j < dims.cols; j++) {
                 std::fputs(std::to_string(matrix[i][j]).data(), stdout);
                 std::fputs(" ",stdout);
             }
