@@ -22,11 +22,14 @@ class MatrixTest : public testing::Test {
         // Matrix<int> resDiv{};
 };
 
-TEST_F(MatrixTest, Operators) {
+TEST_F(MatrixTest, OperatorsAddSubtract) {
+    EXPECT_TRUE(lhs.getDims() == addSubRhs.getDims());
     EXPECT_TRUE(*(lhs+addSubRhs) == resAdd);
     EXPECT_TRUE(*(lhs-addSubRhs) == resSub);
+}
+
+TEST_F(MatrixTest, OperatorsMultiply) {
+    EXPECT_TRUE(lhs.getDims().canMultiply(mulDivRhs.getDims()));
     EXPECT_TRUE(*(lhs*mulDivRhs) == resMul);
     // EXPECT_TRUE(*(lhs/mulDivRhs) == resDiv);
 }
-
-
