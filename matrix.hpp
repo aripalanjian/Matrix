@@ -106,7 +106,7 @@ namespace Neo {
         }
 
         constexpr std::optional<Matrix> operator*(const Matrix& rhs){
-            if (dims.canMultiply(rhs.dims)) {
+            if (dims.canMultiply(rhs.getDims())) {
                 Matrix result{this->dims.rows, rhs.dims.cols};
                 for(size_t i = 0; i < this->dims.rows; i++) {
                     for (size_t k = 0; k < rhs.dims.cols; k++) {
