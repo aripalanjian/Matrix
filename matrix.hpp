@@ -112,11 +112,8 @@ namespace Neo {
                     for (size_t k = 0; k < rhs.dims.cols; k++) {
                         for(size_t j = 0; j < rhs.dims.rows; j++) {
                             result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
-                            // std::fputs((std::to_string(this->matrix[i][j] * rhs.matrix[j][k]) + "+").data(), stdout);
                         }
-                        // std::fputs(("=" + std::to_string(result.matrix[i][k]) + " ").data(), stdout);
                     }
-                    // std::puts("");
                 }
                 return result;
             }
@@ -259,6 +256,9 @@ namespace Neo {
         this->matrix = new T*[n];
         for (size_t i = 0; i < n; i++){
             this->matrix[i] = new T[n];
+            for(size_t j = 0; j < n; j++) {
+                this->matrix[i][j] = 0;
+            }
         }
     };
 
@@ -291,13 +291,12 @@ namespace Neo {
     Matrix<T>::Matrix(std::initializer_list<std::initializer_list<T>> data,const size_t m, const size_t n): dims(m,n) {
         srand(clock());
         this->matrix = new T*[m];
-        auto it = data.begin();
+        auto row = data.begin();
         for(size_t i = 0; i < m; i++) {
             this->matrix[i] = new T[n];
             for(size_t j = 0; j < n; j++) {
-                this->matrix[i][j] = it->begin()[j];
+                this->matrix[i][j] = row++->begin()[j];
             }
-            ++it;
         }
     }
 
