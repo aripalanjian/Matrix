@@ -32,8 +32,6 @@ TEST_F(MatrixTest, OperatorsMultiply) {
     EXPECT_TRUE(lhs.getDims().canMultiply(mulDivRhs.getDims()));
     auto result = lhs*mulDivRhs;
     EXPECT_TRUE(result != std::nullopt);
-    result->print();
-    resMul.print();
     EXPECT_TRUE(*result == resMul);
     // EXPECT_TRUE(*(lhs/mulDivRhs) == resDiv);
 }
