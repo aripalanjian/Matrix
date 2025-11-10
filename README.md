@@ -20,7 +20,7 @@ is not guaranteed to work. As I am able, I will update this library to more mode
  - Matrix(const Matrix& copy):             Copies a given matrix into a new object
 
 ### Overloaded Operators
-- operator= : Working on implementation 
+- operator= : Will take a rvalue or value Matrix object to initialize a new object 
 - operator==: Returns true if every element in lhs matrix is the same as the rhs
 - operator!=: Return the opposite of operator==
 - operator\+: Applies matrix addition to two matrices
@@ -30,7 +30,7 @@ is not guaranteed to work. As I am able, I will update this library to more mode
 
 ### Operations
 - determinant
-- inverse
+- inverse **in progress**
 - cofactor
 - transpose
 - adjoint
