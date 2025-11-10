@@ -295,8 +295,9 @@ namespace Neo {
         for(size_t i = 0; i < m; i++) {
             this->matrix[i] = new T[n];
             for(size_t j = 0; j < n; j++) {
-                this->matrix[i][j] = row++->begin()[j];
+                this->matrix[i][j] = row->begin()[j];
             }
+            ++row;
         }
     }
 
