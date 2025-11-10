@@ -2,6 +2,9 @@
 cmake-build-debug
 build
 
+#Scripts
+scripts
+
 #Generated Local Files
 .DS_Store
 .idea
