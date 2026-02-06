@@ -6,6 +6,8 @@
 #include <optional>
 #include <random>
 #include <thread>
+#include <iostream>
+
 namespace Neo {
     struct Dims {
         size_t rows;
@@ -22,6 +24,16 @@ namespace Neo {
         Matrix subMatrix(const Matrix &A, size_t i, size_t j);
         static void subMatrix(Matrix& cM, const Matrix& A, size_t i, size_t j);
 
+        void multiply_parallel(const Matrix& result, const Matrix& rhs, const size_t rowStart, const size_t colStart, const size_t rowOffset, const size_t colOffset) {
+            //Current implementation moves diagonally i want to move in an mXn block
+            for(size_t i = rowStart; i < rowStart + rowOffset && i < this->dims.rows; i++) {
+                for (size_t k = colStart; k <colStart + colOffset && k < rhs.dims.cols; k++) {
+                    for(size_t j = 0; j < rhs.dims.rows; j++) {
+                        result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
+                    }
+                }
+            }
+        }
 
     public:
         explicit Matrix(size_t n);
@@ -106,15 +118,42 @@ namespace Neo {
         }
 
         constexpr std::optional<Matrix> operator*(const Matrix& rhs){
-            if (dims.canMultiply(rhs.getDims())) {
-                Matrix result{this->dims.rows, rhs.dims.cols};
-                for(size_t i = 0; i < this->dims.rows; i++) {
-                    for (size_t k = 0; k < rhs.dims.cols; k++) {
-                        for(size_t j = 0; j < rhs.dims.rows; j++) {
-                            result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
-                        }
-                    }
+            const size_t m_lhs = this->dims.rows, n_lhs = this->dims.cols, m_rhs = rhs.dims.rows, n_rhs = rhs.dims.cols;
+            Matrix result{m_lhs, n_rhs};
+            if (dims.canMultiply(rhs.dims)) {
+                auto numThreads = std::thread::hardware_concurrency();
+                while(numThreads > m_lhs || numThreads > n_rhs) {
+                    numThreads--;
                 }
+                // if (m_lhs * m_lhs * m_rhs > 1000000 && numThreads > 1) {
+                // Possible issues:
+                //       If m is less than num threads offset will be zero
+                this->print();
+                rhs.print();
+                    size_t rowOffset = m_lhs / numThreads;
+                    size_t colOffset = n_rhs / numThreads;
+                    std::vector<std::thread> threads;
+                    threads.reserve(numThreads);
+                    for (size_t i = 0; i < numThreads; i++) {
+                        threads.emplace_back(std::thread{
+                            [this, &result, &rhs, i, rowOffset, colOffset]() {
+                                this->multiply_parallel(std::ref(result), std::ref(rhs), i*rowOffset, i*colOffset, rowOffset, colOffset);
+                            }
+                        });
+                    }
+                    for (auto& thread : threads) {
+                        thread.join();
+                    }
+                result.print();
+                // } else {
+                //     for(size_t i = 0; i < this->dims.rows; i++) {
+                //         for (size_t k = 0; k < rhs.dims.cols; k++) {
+                //             for(size_t j = 0; j < rhs.dims.rows; j++) {
+                //                 result.matrix[i][k] += this->matrix[i][j] * rhs.matrix[j][k];
+                //             }
+                //         }
+                //     }
+                // }
                 return result;
             }
             return std::nullopt;
@@ -122,7 +161,7 @@ namespace Neo {
 
         constexpr std::optional<Matrix> operator/(const Matrix& divisor) {
             /*
-             *"X = B / A"
+             *"X = B / A" <-- Goal
              *AX = B
              *A^-1 * AX = A^-1 * B
              *IX = A^-1 * B
@@ -227,7 +266,7 @@ namespace Neo {
         [[nodiscard]] constexpr bool isSquare() const {
             return dims.rows == dims.cols;
         }
-        void print();
+        void print() const;
         void serialize(const std::string& fileName = "matrix.csv") {
             std::fstream newFile;
             newFile.open(fileName, std::ios::out | std::ios::app);
@@ -420,7 +459,7 @@ namespace Neo {
     }
     */
     template<std::integral T>
-    void Matrix<T>::print()
+    void Matrix<T>::print() const
     {
         std::puts("[");
         for (int i = 0; i < dims.rows; i++) {
